@@ -1,6 +1,6 @@
 {
     "name": "json-chalker",
-    "version": "2.2.3",
+    "version": "2.2.4",
     "description": "A library to format JSON with colors for display in the console",
     "main": "dist/index.js",
     "scripts": {

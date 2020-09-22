@@ -48,12 +48,12 @@ export function colorize(json: unknown, options: Options = {}) {
             return renderPrimitive(node);
         if (typeof node === 'object' && node != null) {
             if (seen.has(node)) {
-                return '';
+                return '"{REPLACED CIRCULAR REFERENCE}"';
             }
             seen.add(node);
             return renderObject(node);
         }
-        return '';
+        return 'null';
     }
 
     function renderPrimitive(node: Primitive) {
@@ -87,7 +87,7 @@ export function colorize(json: unknown, options: Options = {}) {
         if (colors.CUSTOM) {
             const colorKey = colors.CUSTOM(key, value, parent);
             if (colorKey) {
-                return colorChalk(JSON.stringify(value, getCircularReplacer), colorKey);
+                return colorChalk(JSON.stringify(value, getCircularReplacer()), colorKey);
             }
         }
 
