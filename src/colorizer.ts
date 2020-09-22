@@ -37,6 +37,7 @@ export interface Options {
 type Primitive = string | number | boolean | null;
 
 export function colorize(json: unknown, options: Options = {}) {
+    const seen = new WeakSet();
     options.colors = options.colors ?? {};
     const colors = { ...defaultColors, ...options.colors };
 
@@ -45,8 +46,13 @@ export function colorize(json: unknown, options: Options = {}) {
             return renderArray(node);
         if (isPrimitive(node))
             return renderPrimitive(node);
-        if (typeof node === 'object')
+        if (typeof node === 'object' && node != null) {
+            if (seen.has(node)) {
+                return '';
+            }
+            seen.add(node);
             return renderObject(node);
+        }
         return '';
     }
 
@@ -81,12 +87,11 @@ export function colorize(json: unknown, options: Options = {}) {
         if (colors.CUSTOM) {
             const colorKey = colors.CUSTOM(key, value, parent);
             if (colorKey) {
-                return colorChalk(JSON.stringify(value), colorKey);
+                return colorChalk(JSON.stringify(value, getCircularReplacer), colorKey);
             }
         }
 
         return recurse(value);
-
     }
 
     function renderArray(node: (object | Primitive)[]): string {
@@ -115,3 +120,16 @@ function colorChalk(value: string, colorKey?: string | null) {
 function isPrimitive(node: any): node is Primitive {
     return typeof node === 'string' || typeof node === 'boolean' || typeof node === 'number' || node === null || node === undefined;
 }
+
+const getCircularReplacer = () => {
+    const seen = new WeakSet();
+    return (_key: any, value: any) => {
+        if (typeof value === 'object' && value !== null) {
+            if (seen.has(value)) {
+                return;
+            }
+            seen.add(value);
+        }
+        return value;
+    };
+};
